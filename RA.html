@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ملف إنجاز رقمي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Tajawal', Arial, sans-serif; background: linear-gradient(120deg,#e6e9f0 0%, #eef2f3 100%); color: #222; margin: 0; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 230px;
+            background: #fffbe6;
+            border-left: 3px solid #ffe066;
+            padding: 2rem 1rem 1rem 1rem;
+            box-shadow: 2px 0 24px #b5e55022;
+            position: fixed; right: 0; top: 0; bottom: 0; z-index: 10;
+            transition: width 0.3s;
+        }
+        .sidebar .logo { font-size: 2rem; color: #7ac142; text-align: center; margin-bottom: 2rem; font-weight:bold; letter-spacing:2px; }
+        .sidebar-nav ul { list-style: none; padding: 0; }
+        .sidebar-nav li { margin-bottom: 1.2rem; }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 1rem;
+            text-decoration: none; color: #333; font-size: 1.1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            transition: background 0.2s, color 0.2s, transform 0.12s;
+            font-weight: 500;
+        }
+        .sidebar-nav a.active, .sidebar-nav a:hover {
+            background: linear-gradient(90deg,#d4fc79 0%,#96e6a1 100%);
+            color: #222; transform: scale(1.04);
+        }
+        .main-content { flex: 1; margin-right: 230px; padding: 2.5rem 2rem; transition: margin 0.3s; }
+        .main-section { display: none; animation: fadeIn 0.45s; }
+        .main-section.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px);}
+            to   { opacity: 1; transform: none;}
+        }
+        .main-card {
+            background: #fff;
+            border-radius: 22px;
+            box-shadow: 0 4px 24px #b5e55022;
+            padding: 2.1rem;
+            margin-bottom: 2rem;
+            transition: box-shadow 0.18s;
+        }
+        .main-card:hover { box-shadow: 0 8px 32px #b5e55044; }
+        .section-title { font-size: 1.6rem; color: #7ac142; margin-bottom: 1.2rem; font-weight: bold; }
+        .file-list { list-style: none; padding: 0; }
+        .file-item {
+            background: #f9fbe7; border: 1px solid #ffe066; border-radius: 11px;
+            margin-bottom: 0.7rem; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 1rem;
+            cursor: pointer; transition: background 0.2s, box-shadow 0.15s;
+            box-shadow: 0 1px 10px #d4fc7933;
+        }
+        .file-item:hover { background: #d4fc79; color: #222; box-shadow: 0 2px 16px #96e6a166; }
+        .file-item i { color: #7ac142; }
+        .sub-section-title { font-size: 1.14rem; color: #1ca764; margin: 1.2rem 0 0.5rem 0; font-weight:600;}
+        /* واجهة رئيسية */
+        .intro-section {
+            display: flex; align-items: center; justify-content: flex-start; gap: 2.2rem;
+            background: linear-gradient(120deg,#d4fc79 0%,#96e6a1 100%);
+            border-radius: 22px; box-shadow: 0 4px 24px #7ac14222;
+            padding: 2.5rem 2rem; margin-bottom: 2.5rem;
+        }
+        .intro-info {
+            flex:1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1.2rem;
+        }
+        .intro-title {
+            font-size: 2.3rem;
+            font-weight: 800;
+            color: #222;
+            margin: 0;
+            letter-spacing: 1.5px;
+        }
+        .intro-desc {
+            font-size: 1.15rem;
+            color: #444;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+        }
+        .intro-img {
+            width: 160px;
+            height: 180px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 32px #7ac14244;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .intro-img img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+        /* Responsive tweaks */
+        @media (max-width: 900px) {
+            .sidebar { width: 60px; padding: 1rem 0.2rem; }
+            .sidebar .logo { font-size: 1.1rem; }
+            .sidebar-nav a span { display: none; }
+            .main-content { margin-right: 60px; padding: 1.1rem 0.3rem; }
+            .intro-section { flex-direction: column; gap:1.2rem; align-items:flex-start;}
+            .intro-img { margin: 0 auto; }
+            .intro-title { font-size: 1.35rem; }
+        }
+        /* تفاعل بالماوس */
+        .file-item:active { transform: scale(0.97); }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <nav class="sidebar">
+        <div class="logo">ملف الإنجاز</div>
+        <div class="sidebar-nav">
+            <ul>
+                <li><a href="#" class="active" onclick="showSection('home', this)"><span>الرئيسية</span></a></li>
+                <li><a href="#" onclick="showSection('plan', this)"><span>التخطيط والتنظيم</span></a></li>
+                <li><a href="#" onclick="showSection('grades', this)"><span>درجات الطلاب</span></a></li>
+                <li><a href="#" onclick="showSection('homework', this)"><span>الواجبات وأوراق العمل</span></a></li>
+                <li><a href="#" onclick="showSection('remedial', this)"><span>الخطط العلاجية</span></a></li>
+                <li><a href="#" onclick="showSection('tests', this)"><span>الاختبارات</span></a></li>
+                <li><a href="#" onclick="showSection('enrichment', this)"><span>البرامج الإثرائية والسمات</span></a></li>
+                <li><a href="#" onclick="showSection('platform', this)"><span>المنصة</span></a></li>
+                <li><a href="#" onclick="showSection('growth', this)"><span>النمو المهني</span></a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="main-content">
+        <!-- الصفحة الرئيسية الحديثة -->
+        <section id="homeSection" class="main-section active">
+            <div class="intro-section">
+                <div class="intro-info">
+                    <div class="intro-title">الأستاذ رشاد إدريس</div>
+                    <div class="intro-desc">
+                        معلم رياضيات في قسم عرقه عليا.<br>
+                        هذا الموقع هو ملف الإنجاز الرقمي الخاص بي ويضم جميع أعمالي وشواهدي وخطط التدريس والإنجازات.
+                    </div>
+                </div>
+                <div class="intro-img">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/WhatsApp Image 2025-05-15 at 9.44.48 AM.jpeg" alt="الأستاذ رشاد إدريس">
+                </div>
+            </div>
+        </section>
+        <!-- التخطيط والتنظيم -->
+        <section id="planSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">التخطيط والتنظيم</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; margin-bottom: 2rem;">
+                    <!-- الخطة الزمنية -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#fffde7; border:2px solid #ffe066; border-radius:18px; box-shadow:0 2px 12px #ffe06633; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-calendar-alt" style="font-size:2rem;color:#ff9800;margin-bottom:0.7rem;"></i>
+                        <h4>الخطة الزمنية والواجبات</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/خطة واجبات رابع ف3.pdf')"><i class="fas fa-file-pdf"></i> خطة واجبات رابع ف3</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/خطة واجبات 4ب ف1 عام 1446هـ.pdf')"><i class="fas fa-file-pdf"></i> خطة واجبات 4ب ف1 عام 1446هـ</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/خطة واجبات 4ب ف2.pdf')"><i class="fas fa-file-pdf"></i> خطة واجبات 4ب ف2</li>
+                        </ul>
+                    </div>
+                    <!-- توزيع المنهج -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#e7f9e7; border:2px solid #b5e550; border-radius:18px; box-shadow:0 2px 12px #b5e55033; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-project-diagram" style="font-size:2rem;color:#4caf50;margin-bottom:0.7rem;"></i>
+                        <h4>توزيع المنهج</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/توزيع المنهج للفصل الثالث 1446 هـ.pdf')"><i class="fas fa-file-pdf"></i> توزيع المنهج للفصل الثالث 1446 هـ</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/توزيع مقرر رياضيات 4ب ف1 -1446هـ.pdf')"><i class="fas fa-file-pdf"></i> توزيع مقرر رياضيات 4ب ف1 -1446هـ</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/خطة توزيع منهج ريض 4ب ف2.pdf')"><i class="fas fa-file-pdf"></i> خطة توزيع منهج ريض 4ب ف2</li>
+                        </ul>
+                    </div>
+                    <!-- تحليل المحتوى -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#f3e5f5; border:2px solid #ab47bc; border-radius:18px; box-shadow:0 2px 12px #ab47bc33; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-chart-pie" style="font-size:2rem;color:#ab47bc;margin-bottom:0.7rem;"></i>
+                        <h4>تحليل المحتوى</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/__تحليل المحتوى رابع رياضيات.pdf')"><i class="fas fa-file-pdf"></i> __تحليل المحتوى رابع رياضيات</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/تحليل المحتوى صف رابع ف(3) 1446.pdf')"><i class="fas fa-file-pdf"></i> تحليل المحتوى صف رابع ف(3) 1446</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/لتحليل المحتوى الصف الرابع (ف 2).pdf')"><i class="fas fa-file-pdf"></i> لتحليل المحتوى الصف الرابع (ف 2)</li>
+                        </ul>
+                    </div>
+                    <!-- جداول المواصفات -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#e3f2fd; border:2px solid #2196f3; border-radius:18px; box-shadow:0 2px 12px #2196f333; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-table" style="font-size:2rem;color:#2196f3;margin-bottom:0.7rem;"></i>
+                        <h4>جداول المواصفات</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/جدول مواصفات صف رابع ف2.pdf')"><i class="fas fa-file-pdf"></i> جدول مواصفات صف رابع ف2</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/جداول_مواصفات_الفصل_الدراسي_الأول_للعام_الدراسي1444هـ.pdf')"><i class="fas fa-file-pdf"></i> جداول مواصفات الفصل الدراسي الأول للعام الدراسي 1444هـ</li>
+                        </ul>
+                    </div>
+                    <!-- صور الجداول والجدول الأسبوعي -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#fffde7; border:2px solid #ffe066; border-radius:18px; box-shadow:0 2px 12px #ffe06633; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-image" style="font-size:2rem;color:#ff9800;margin-bottom:0.7rem;"></i>
+                        <h4>جداول الحصص وصور</h4>
+                        <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/WhatsApp Image 2025-05-09 at 12.41.21 AM.jpeg" alt="جدول الحصص 1" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #ffe066; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/WhatsApp Image 2025-05-09 at 12.41.21 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/WhatsApp Image 2025-05-09 at 12.58.16 AM.jpeg" alt="جدول الحصص 2" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #ffe066; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/WhatsApp Image 2025-05-09 at 12.58.16 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/WhatsApp Image 2025-05-09 at 12.41.21 AM (1).jpeg" alt="جدول الحصص 3" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #ffe066; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/WhatsApp Image 2025-05-09 at 12.41.21 AM (1).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/فصل رابع اول.jpeg" alt="فصل رابع اول" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #ffe066; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/فصل رابع اول.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/فصل رابع ثاني.jpeg" alt="فصل رابع ثاني" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #ffe066; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/فصل رابع ثاني.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/فصل رابع ثالث.jpeg" alt="فصل رابع ثالث" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #ffe066; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/فصل رابع ثالث.jpeg','_blank')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- درجات الطلاب -->
+        <section id="gradesSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">درجات الطلاب</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; margin-bottom: 2rem;">
+                    <!-- نور -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#fffde7; border:2px solid #ffe066; border-radius:18px; box-shadow:0 2px 12px #ffe06633; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-lightbulb" style="font-size:2rem;color:#ff9800;margin-bottom:0.7rem;"></i>
+                        <h4>نور</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/نور1.pdf')"><i class="fas fa-file-pdf"></i> نور1</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/نور2.pdf')"><i class="fas fa-file-pdf"></i> نور2</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/نور3.pdf')"><i class="fas fa-file-pdf"></i> نور3</li>
+                        </ul>
+                    </div>
+                    <!-- احصائيات الدرجات -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#e7f9e7; border:2px solid #b5e550; border-radius:18px; box-shadow:0 2px 12px #b5e55033; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-chart-line" style="font-size:2rem;color:#4caf50;margin-bottom:0.7rem;"></i>
+                        <h4>احصائيات درجات الطلاب</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/خامس 2.pdf')"><i class="fas fa-file-pdf"></i> خامس 2</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/خامس 3.pdf')"><i class="fas fa-file-pdf"></i> خامس 3</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/خامس اول-1.pdf')"><i class="fas fa-file-pdf"></i> خامس اول-1</li>
+                        </ul>
+                    </div>
+                    <!-- الطلاب المميزون -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#e3f2fd; border:2px solid #2196f3; border-radius:18px; box-shadow:0 2px 12px #2196f333; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-star" style="font-size:2rem;color:#2196f3;margin-bottom:0.7rem;"></i>
+                        <h4>الطلاب المميزون</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/طلاب مميزون خامس 1.pdf')"><i class="fas fa-file-pdf"></i> طلاب مميزون خامس 1</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/طلاب مميزون خامس 2.pdf')"><i class="fas fa-file-pdf"></i> طلاب مميزون خامس 2</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/طلاب مميزون خامس 3.pdf')"><i class="fas fa-file-pdf"></i> طلاب مميزون خامس 3</li>
+                        </ul>
+                    </div>
+                    <!-- تقييم الطلاب -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#f3e5f5; border:2px solid #ab47bc; border-radius:18px; box-shadow:0 2px 12px #ab47bc33; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-clipboard-check" style="font-size:2rem;color:#ab47bc;margin-bottom:0.7rem;"></i>
+                        <h4>تقييم الطلاب</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('New folder/تقييم طلاب الصف الرابع فصل اول وثاني.pdf')"><i class="fas fa-file-pdf"></i> تقييم طلاب الصف الرابع فصل اول وثاني</li>
+                            <li class="file-item" onclick="showPdf('New folder/تقييم طلاب الصف الرابع 2فصل اول وثاني (1).pdf')"><i class="fas fa-file-pdf"></i> تقييم طلاب الصف الرابع 2فصل اول وثاني (1)</li>
+                        </ul>
+                    </div>
+                    <!-- درجات رابع -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#fffde7; border:2px solid #ffe066; border-radius:18px; box-shadow:0 2px 12px #ffe06633; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-percentage" style="font-size:2rem;color:#ff9800;margin-bottom:0.7rem;"></i>
+                        <h4>درجات رابع</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/درجات رابع ثاني.pdf')"><i class="fas fa-file-pdf"></i> درجات رابع ثاني</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/درجات رابع ثالث.pdf')"><i class="fas fa-file-pdf"></i> درجات رابع ثالث</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/درحات رابع اول.pdf')"><i class="fas fa-file-pdf"></i> درحات رابع اول</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- الواجبات وأوراق العمل -->
+        <section id="homeworkSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">الواجبات وأوراق العمل</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; margin-bottom: 2rem;">
+                    <!-- الواجبات -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#fffde7; border:2px solid #ffe066; border-radius:18px; box-shadow:0 2px 12px #ffe06633; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-book-open" style="font-size:2rem;color:#ff9800;margin-bottom:0.7rem;"></i>
+                        <h4>الواجبات</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/خطة واجبات 4ب ف1 عام 1446هـ.pdf')"><i class="fas fa-file-pdf"></i> خطة واجبات 4ب ف1 عام 1446هـ</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/خطة واجبات 4ب ف2.pdf')"><i class="fas fa-file-pdf"></i> خطة واجبات 4ب ف2</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/خطة واجبات رابع ف3.pdf')"><i class="fas fa-file-pdf"></i> خطة واجبات رابع ف3</li>
+                        </ul>
+                    </div>
+                    <!-- أوراق العمل -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#e7f9e7; border:2px solid #b5e550; border-radius:18px; box-shadow:0 2px 12px #b5e55033; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-file-alt" style="font-size:2rem;color:#4caf50;margin-bottom:0.7rem;"></i>
+                        <h4>أوراق العمل</h4>
+                        <ul class="file-list" style="text-align:right;">
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/الجزء الأول أوراق عمل صف رابع ف2 (4).pdf')"><i class="fas fa-file-pdf"></i> الجزء الأول أوراق عمل صف رابع ف2 (4)</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/الجزء الأول أوراق عمل صف رابع ف2.pdf')"><i class="fas fa-file-pdf"></i> الجزء الأول أوراق عمل صف رابع ف2</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/الجزء الثاني  أوراق عمل صف رابع ف2.pdf')"><i class="fas fa-file-pdf"></i> الجزء الثاني أوراق عمل صف رابع ف2</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/الجزء الثالث  أوراق عمل صف رابع ف2 (1).pdf')"><i class="fas fa-file-pdf"></i> الجزء الثالث أوراق عمل صف رابع ف2 (1)</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/الجزء الثالث  أوراق عمل صف رابع ف2 (2).pdf')"><i class="fas fa-file-pdf"></i> الجزء الثالث أوراق عمل صف رابع ف2 (2)</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/الجزء الرابع  أوراق عمل صف رابع ف2 (1).pdf')"><i class="fas fa-file-pdf"></i> الجزء الرابع أوراق عمل صف رابع ف2 (1)</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/أوراق عمل الفصل 10 ف3 رابع.pdf')"><i class="fas fa-file-pdf"></i> أوراق عمل الفصل 10 ف3 رابع</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/أوراق عمل صف رابع الفصل التاسع للفصل الدراسي الثالث.pdf')"><i class="fas fa-file-pdf"></i> أوراق عمل صف رابع الفصل التاسع للفصل الدراسي الثالث</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/القيمة المنزلية ضمن  مئات الالوف-1.pdf')"><i class="fas fa-file-pdf"></i> القيمة المنزلية ضمن مئات الالوف</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/القيمة المنزلية ضمن الملايين (1).pdf')"><i class="fas fa-file-pdf"></i> القيمة المنزلية ضمن الملايين</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/المقارنة بين الاعداد-1.pdf')"><i class="fas fa-file-pdf"></i> المقارنة بين الاعداد</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/ترتيب الاعداد-1.pdf')"><i class="fas fa-file-pdf"></i> ترتيب الاعداد</li>
+                            <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/تقريب الاعداد-1.pdf')"><i class="fas fa-file-pdf"></i> تقريب الاعداد</li>
+                        </ul>
+                    </div>
+                    <!-- شواهد الواجبات (صور) -->
+                    <div class="main-card-link" style="flex:1; min-width:220px; max-width:320px; background:#e3f2fd; border:2px solid #2196f3; border-radius:18px; box-shadow:0 2px 12px #2196f333; padding:1.2rem; text-align:center;">
+                        <i class="fas fa-image" style="font-size:2rem;color:#2196f3;margin-bottom:0.7rem;"></i>
+                        <h4>شواهد الواجبات (صور)</h4>
+                        <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.38 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.38 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM(1).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM(2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM(2).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM(3).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.39 AM(3).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.40 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.40 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.40 AM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.40 AM(1).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.40 AM(2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.40 AM(2).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.41 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.41 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.41 AM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.31.41 AM(1).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.32.12 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.32.12 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.32.12 AM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-13 at 12.32.12 AM(1).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-14 at 12.32.34 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-14 at 12.32.34 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-14 at 12.33.32 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2024-05-14 at 12.33.32 AM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.19.04 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.19.04 PM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.01 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.01 PM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM (1).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM (2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM (2).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM (3).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.02 PM (3).jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.03 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.03 PM.jpeg','_blank')">
+                            <img src="ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.03 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/3- الواجبات واوراق العمل/WhatsApp Image 2025-02-03 at 8.20.03 PM (1).jpeg','_blank')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- الخطط العلاجية -->
+        <section id="remedialSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">الخطط العلاجية</div>
+                <div class="sub-section-title">ملفات علاجية أساسية</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/حصر الطلاب الضعاف.pdf')"><i class="fas fa-file-pdf"></i> حصر الطلاب الضعاف</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/حصر الضعاف.JPG')"><i class="fas fa-file-image"></i> صورة حصر الضعاف</li>
+                </ul>
+                <div class="sub-section-title">استمارات المتابعة</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/استمارة متابعة طلاب رابع 1.pdf')"><i class="fas fa-file-pdf"></i> استمارة متابعة طلاب رابع 1</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/استمارة متابعة طلاب رابع 3.pdf')"><i class="fas fa-file-pdf"></i> استمارة متابعة طلاب رابع 3</li>
+                </ul>
+                <div class="sub-section-title">أوراق عمل علاجية</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/أوراق عمل علاجية التشخيصي رابع ف1.pdf')"><i class="fas fa-file-pdf"></i> أوراق عمل علاجية التشخيصي رابع ف1</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/أوراق عمل مهارات التكويني الفصل الدراسي الثاني.pdf')"><i class="fas fa-file-pdf"></i> أوراق عمل مهارات التكويني الفصل الدراسي الثاني</li>
+                </ul>
+                <div class="sub-section-title">تحليل ونتائج الاختبارات</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/برمجية  تحليل رابع اول.pdf')"><i class="fas fa-file-pdf"></i> برمجية تحليل رابع أول</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/برمجية تحليل الاختبار رابع ثالث.pdf')"><i class="fas fa-file-pdf"></i> برمجية تحليل الاختبار رابع ثالث</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/برمجية تحليل الاختبار رابع خامس (1).pdf')"><i class="fas fa-file-pdf"></i> برمجية تحليل الاختبار رابع خامس</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/برمجية تحليل الاختباررابع رابع.pdf')"><i class="fas fa-file-pdf"></i> برمجية تحليل الاختبار رابع رابع</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/برمجية تحليل رابع ثالث (1).pdf')"><i class="fas fa-file-pdf"></i> برمجية تحليل رابع ثالث (1)</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/برمجية تحليل رابع ثالث.pdf')"><i class="fas fa-file-pdf"></i> برمجية تحليل رابع ثالث</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/برمجية تحليل رابع ثاني (1).pdf')"><i class="fas fa-file-pdf"></i> برمجية تحليل رابع ثاني</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/تحليل  خامس اول.pdf')"><i class="fas fa-file-pdf"></i> تحليل خامس أول</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/تحليل خامس ثالث.pdf')"><i class="fas fa-file-pdf"></i> تحليل خامس ثالث</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/تحليل خامس ثاني.pdf')"><i class="fas fa-file-pdf"></i> تحليل خامس ثاني</li>
+                </ul>
+                <div class="sub-section-title">نتائج الطلاب والتقارير</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس 2.pdf')"><i class="fas fa-file-pdf"></i> خامس 2</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس 3.pdf')"><i class="fas fa-file-pdf"></i> خامس 3</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس اول (1).pdf')"><i class="fas fa-file-pdf"></i> خامس أول (1)</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس اول ضعاف.pdf')"><i class="fas fa-file-pdf"></i> خامس أول ضعاف</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس اول-1.pdf')"><i class="fas fa-file-pdf"></i> خامس أول-1</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس بعدي خامس1.pdf')"><i class="fas fa-file-pdf"></i> خامس بعدي خامس1</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس ثالث ضعاف.pdf')"><i class="fas fa-file-pdf"></i> خامس ثالث ضعاف</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس ثاني ضعاف.pdf')"><i class="fas fa-file-pdf"></i> خامس ثاني ضعاف</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/خامس3 (1).pdf')"><i class="fas fa-file-pdf"></i> خامس3 (1)</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/صف خامس ثالث بعدي.pdf')"><i class="fas fa-file-pdf"></i> صف خامس ثالث بعدي</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/صف خامس ثاني بعدي.pdf')"><i class="fas fa-file-pdf"></i> صف خامس ثاني بعدي</li>
+                </ul>
+                <div class="sub-section-title">اختبارات علاجية</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/اختبار بعدي تكويني.pdf')"><i class="fas fa-file-pdf"></i> اختبار بعدي تكويني</li>
+                </ul>
+                <div class="sub-section-title">فيديوهات علاجية</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/فيديو الشثري (1).mp4')"><i class="fas fa-file-video"></i> فيديو الشثري</li>
+                </ul>
+                <div class="sub-section-title">شواهد علاجية (صور)</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.19.04 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.19.04 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.01 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.01 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM (2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM (2).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM (3).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.02 PM (3).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.03 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.03 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.03 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 8.20.03 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.44 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.44 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.44 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.44 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.45 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.45 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.45 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.45 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.45 PM (2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.04.45 PM (2).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.21 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.21 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.24 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.24 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.27 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.27 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.27 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.27 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.31 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.31 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.35 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.35 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.38 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.38 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.39 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.42.39 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.38 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.38 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.41 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.41 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.45 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.45 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.48 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.48 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.52 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.52 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.55 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.46.55 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.47.03 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.47.03 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.11 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.11 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.11 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.11 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.16 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.16 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.18 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.18 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.18 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.18 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.19 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.19 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.19 PM (1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.19 PM (1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.23 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.50.23 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.27 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.27 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.30 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.30 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.33 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.33 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.37 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.37 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.38 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.38 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.39 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/4- الخطط العلاجية/WhatsApp Image 2025-02-03 at 10.54.39 PM.jpeg','_blank')">
+                </div>
+            </div>
+        </section>
+        <!-- الاختبارات -->
+        <section id="testsSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">الاختبارات</div>
+                <div class="sub-section-title">اختبارات الفترة الأولى</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/اختبار رياضيات رابع الفترة ف1 1446.pdf')"><i class="fas fa-file-pdf"></i> اختبار رياضيات رابع الفترة ف1 1446</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/اختبار صف رابع ف1 1446.pdf')"><i class="fas fa-file-pdf"></i> اختبار صف رابع ف1 1446</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/اختبار ب 46 (1).pdf')"><i class="fas fa-file-pdf"></i> اختبار ب 46 (1)</li>
+                </ul>
+                <div class="sub-section-title">اختبارات منتصف الفصل</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/اختبار منتصف الفصل الدراسي الثاني رابع.pdf')"><i class="fas fa-file-pdf"></i> اختبار منتصف الفصل الدراسي الثاني رابع</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/اختبار الفترة الفصل الدراسي الثاني.pdf')"><i class="fas fa-file-pdf"></i> اختبار الفترة الفصل الدراسي الثاني</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/اختبار الفترة ف3.pdf')"><i class="fas fa-file-pdf"></i> اختبار الفترة ف3</li>
+                </ul>
+                <div class="sub-section-title">اختبارات نهائية</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/اختبار نهائي صف رابع ف2.pdf')"><i class="fas fa-file-pdf"></i> اختبار نهائي صف رابع ف2</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/ب ب اختبار نهائي صف رابع ابتدائي الفصل الدراسي الثاني 1ـ نموذج ب.pdf')"><i class="fas fa-file-pdf"></i> اختبار نهائي صف رابع ابتدائي الفصل الدراسي الثاني نموذج ب</li>
+                </ul>
+                <div class="sub-section-title">تحليل محتوى وجداول المواصفات</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/تحليل محتوى وجدول مواصفات  صف خامس ف1.pdf')"><i class="fas fa-file-pdf"></i> تحليل محتوى وجدول مواصفات صف خامس ف1</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/5- الاختبارات/تحليل محتوى وجدول مواصفات كامل صف خامس ف3 (1).pdf')"><i class="fas fa-file-pdf"></i> تحليل محتوى وجدول مواصفات كامل صف خامس ف3</li>
+                </ul>
+            </div>
+        </section>
+        <!-- البرامج الإثرائية والسمات -->
+        <section id="enrichmentSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">البرامج الإثرائية والسمات</div>
+                <div class="sub-section-title">ملفات البرامج الإثرائية</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/منجزات البرامج.pdf')"><i class="fas fa-file-pdf"></i> منجزات البرامج</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/المستثمر الواعد 1446.pdf')"><i class="fas fa-file-pdf"></i> المستثمر الواعد 1446</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/بحث اجرائي  التعلم باللعب.pdf')"><i class="fas fa-file-pdf"></i> بحث اجرائي التعلم باللعب</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/بحث رشاد عن مشكلة السلوك العدواني.pdf')"><i class="fas fa-file-pdf"></i> بحث رشاد عن مشكلة السلوك العدواني</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/تقرير  وشواهد  وجدول تدريب كانجارو.pdf')"><i class="fas fa-file-pdf"></i> تقرير وشواهد وجدول تدريب كانجارو</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/نموذج تقرير علم بالقلم.pdf')"><i class="fas fa-file-pdf"></i> نموذج تقرير علم بالقلم</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/نموذج تقرير علم بالقلم (1).pdf')"><i class="fas fa-file-pdf"></i> نموذج تقرير علم بالقلم (1)</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/مشروع ذا لاين (1).pdf')"><i class="fas fa-file-pdf"></i> مشروع ذا لاين</li>
+                </ul>
+                <div class="sub-section-title">شهادات ومشاركات</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/شهادة من الاتحاد السعودي للرياضيات الذهنية.jpeg" alt="شهادة من الاتحاد السعودي للرياضيات الذهنية" style="width:220px; height:auto; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/شهادة من الاتحاد السعودي للرياضيات الذهنية.jpeg','_blank')">
+                </div>
+                <div class="sub-section-title">صور من الأنشطة والفعاليات</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.35 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.35 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.35 PM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.35 PM(1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(2).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(3).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(3).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(4).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(4).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(5).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(5).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(6).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.36 PM(6).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(2).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(3).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(3).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(4).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(4).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(6).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.37 PM(6).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.38 PM(3).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-11 at 7.01.38 PM(3).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 2.53.09 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 2.53.09 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 2.53.09 PM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 2.53.09 PM(1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.39 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.39 AM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.39 AM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.39 AM(1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.40 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.40 AM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.40 AM(2).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.40 AM(2).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.41 AM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.31.41 AM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.32.12 AM(1).jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2024-05-13 at 12.32.12 AM(1).jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.17 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.17 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.21 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.21 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.23 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.23 PM.jpeg','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.24 PM.jpeg" alt="" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/WhatsApp Image 2025-05-09 at 3.05.24 PM.jpeg','_blank')">
+                </div>
+                <div class="sub-section-title">شواهد ومشاركات كانجارو</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/_حصر طلاب مسابقة كانجارو ٢٠٢٥.pdf')"><i class="fas fa-file-pdf"></i> حصر طلاب مسابقة كانجارو 2025</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/الطلاب الفائزين في كانجارو.jpeg')"><i class="fas fa-file-image"></i> الطلاب الفائزين في كانجارو</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/الفائزين مسابقة كانجارو.jpeg')"><i class="fas fa-file-image"></i> الفائزين مسابقة كانجارو</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/جدول تدريب كانجارو.jpeg')"><i class="fas fa-file-image"></i> جدول تدريب كانجارو</li>
+                </ul>
+                <div class="sub-section-title">فيديوهات وملفات تفاعلية</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/فيديو الشثري (1).mp4')"><i class="fas fa-file-video"></i> فيديو الشثري</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/نواتج تعلم الاشكال ثلاثية الابعاد فيديو.mp4')"><i class="fas fa-file-video"></i> نواتج تعلم الأشكال ثلاثية الأبعاد (فيديو)</li>
+                </ul>
+                <div class="sub-section-title">طلاب متميزون</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showDoc('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/الطلاب المتميزين (1).docx')"><i class="fas fa-file-word"></i> الطلاب المتميزين (1) (Word)</li>
+                    <li class="file-item" onclick="showDoc('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/الطلاب المتميزين (2).docx')"><i class="fas fa-file-word"></i> الطلاب المتميزين (2) (Word)</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/الطلاب المتميزين (1).pdf')"><i class="fas fa-file-pdf"></i> الطلاب المتميزين (1) (PDF)</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/6-البرامج الإثرائية والسمات/الطلاب المتميزين (2).pdf')"><i class="fas fa-file-pdf"></i> الطلاب المتميزين (2) (PDF)</li>
+                </ul>
+            </div>
+        </section>
+        <!-- المنصة -->
+        <section id="platformSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">المنصة</div>
+                <div class="sub-section-title">صور تحاضير وخطط</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/التقاط.JPG" alt="التقاط" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/التقاط.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير س.JPG" alt="تحاضير س" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير س.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير ص.JPG" alt="تحاضير ص" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير ص.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير م 4.JPG" alt="تحاضير م 4" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير م 4.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير مم.JPG" alt="تحاضير مم" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير مم.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير.JPG" alt="تحاضير" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحاضير.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير قائمة2.JPG" alt="تحضير قائمة2" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير قائمة2.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير م.JPG" alt="تحضير م" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير م.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير م3.JPG" alt="تحضير م3" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير م3.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير منصة.JPG" alt="تحضير منصة" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/تحضير منصة.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 3.JPG" alt="خطة 3" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 3.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 5.JPG" alt="خطة 5" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 5.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 6.JPG" alt="خطة 6" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 6.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 7.JPG" alt="خطة 7" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 7.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 8.JPG" alt="خطة 8" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة 8.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة ف12.JPG" alt="خطة ف12" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة ف12.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة2.JPG" alt="خطة2" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة2.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة3.JPG" alt="خطة3" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/خطة3.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف2.JPG" alt="ف2" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف2.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف11.JPG" alt="ف11" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف11.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف13.JPG" alt="ف13" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف13.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف22.JPG" alt="ف22" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف22.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف222.JPG" alt="ف222" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/ف222.JPG','_blank')">
+                </div>
+                <div class="sub-section-title">قوائم وواجبات المنصة</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/قائمة واجب 2 (1).JPG" alt="قائمة واجب 2 (1)" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/قائمة واجب 2 (1).JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/قائمة واجب 2.JPG" alt="قائمة واجب 2" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/قائمة واجب 2.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/قائمة واجب.JPG" alt="قائمة واجب" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/قائمة واجب.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجب منصة س.JPG" alt="واجب منصة س" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجب منصة س.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجب منصةص (1).JPG" alt="واجب منصةص (1)" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجب منصةص (1).JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجب منصةص.JPG" alt="واجب منصةص" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجب منصةص.JPG','_blank')">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجبات منصة.JPG" alt="واجبات منصة" style="width:90px; height:60px; border-radius:8px; border:1.5px solid #2196f3; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/المنصة/واجبات منصة.JPG','_blank')">
+                </div>
+            </div>
+        </section>
+        <!-- النمو المهني -->
+        <section id="growthSection" class="main-section">
+            <div class="main-card">
+                <div class="section-title">النمو المهني</div>
+                <div class="sub-section-title">بحوث وتقارير</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/بحث اجرائي  التعلم باللعب.pdf')"><i class="fas fa-file-pdf"></i> بحث اجرائي التعلم باللعب</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/بحث رشاد عن مشكلة السلوك العدواني.pdf')"><i class="fas fa-file-pdf"></i> بحث رشاد عن مشكلة السلوك العدواني</li>
+                </ul>
+                <div class="sub-section-title">التعلم المدمج</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/التعلم المدمج.pdf')"><i class="fas fa-file-pdf"></i> التعلم المدمج</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/التعلم المدمج-1.pdf')"><i class="fas fa-file-pdf"></i> التعلم المدمج (نسخة 2)</li>
+                </ul>
+                <div class="sub-section-title">مبادئ واستراتيجيات وتطبيقات</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/مبادئ واستراتجيات وتطبيقات.pdf')"><i class="fas fa-file-pdf"></i> مبادئ واستراتيجيات وتطبيقات</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/مبادئ واستراتجيات وتطبيقات-1.pdf')"><i class="fas fa-file-pdf"></i> مبادئ واستراتيجيات وتطبيقات (نسخة 2)</li>
+                </ul>
+                <div class="sub-section-title">مهارات متقدمة تكنولوجيا التعليم</div>
+                <ul class="file-list">
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/مهارات متقدمة تكنولوجيا التعليم.pdf')"><i class="fas fa-file-pdf"></i> مهارات متقدمة تكنولوجيا التعليم</li>
+                    <li class="file-item" onclick="showPdf('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/مهارات متقدمة تكنولوجيا التعليم-1.pdf')"><i class="fas fa-file-pdf"></i> مهارات متقدمة تكنولوجيا التعليم (نسخة 2)</li>
+                </ul>
+                <div class="sub-section-title">صور شهادات ودورات</div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.7rem; justify-content:center;">
+                    <img src="ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/اعناب رشادالادار ة الصفية الذكية.JPG" alt="اعناب رشاد الادارة الصفية الذكية" style="width:120px; height:auto; border-radius:8px; border:1.5px solid #b5e550; cursor:pointer;" onclick="window.open('ملف RA/drive-download-20250517T104832Z-1-001/7- النمو المهني/اعناب رشادالادار ة الصفية الذكية.JPG','_blank')">
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+<script>
+    function showSection(section, el) {
+        document.querySelectorAll('.main-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(section + 'Section').classList.add('active');
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+        if (el) el.classList.add('active');
+    }
+    function showPdf(filename) {
+        window.open(encodeURI(filename), '_blank');
+    }
+    // دعم فتح ملفات وورد مباشرة في المتصفح (Google Docs Viewer)
+    function showDoc(filename) {
+        window.open('https://docs.google.com/gview?url=' + encodeURIComponent(window.location.origin + '/' + filename) + '&embedded=true', '_blank');
+    }
+</script>
+</body>
+</html>
